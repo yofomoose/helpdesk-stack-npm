@@ -5,7 +5,7 @@
 ```bash
 cd /path/to/helpdesk-stack-npm && \
 chmod +x *.sh && \
-docker compose up -d v2_glpi_db v2_chatwoot_db v2_chatwoot_redis && \
+docker compose up -d glpi_db chatwoot_db chatwoot_redis && \
 sleep 60 && \
 docker compose run --rm chatwoot bundle exec rails db:chatwoot_prepare && \
 docker compose up -d && \
@@ -23,7 +23,7 @@ cd /path/to/old-version && ./backup.sh
 # 3. Запуск БД
 cd /path/to/helpdesk-stack-npm
 chmod +x *.sh
-docker compose up -d v2_glpi_db v2_chatwoot_db v2_chatwoot_redis
+docker compose up -d glpi_db chatwoot_db chatwoot_redis
 sleep 60
 
 # 4. Инициализация Chatwoot

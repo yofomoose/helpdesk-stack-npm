@@ -102,7 +102,7 @@ chmod +x *.sh
 docker network ls | grep npm_default
 
 # Запустите базы данных
-docker compose up -d v2_glpi_db v2_chatwoot_db v2_chatwoot_redis
+docker compose up -d glpi_db chatwoot_db chatwoot_redis
 
 # Подождите 60 секунд
 sleep 60

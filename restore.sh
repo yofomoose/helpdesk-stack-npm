@@ -103,14 +103,14 @@ docker compose stop glpi chatwoot chatwoot_sidekiq 2>/dev/null || true
 if [ -f "${RESTORE_DIR}/glpi_database.sql" ]; then
     log "GLPI: Восстановление базы данных..."
 
-    docker exec glpi_db mysql -u root -p"${GLPI_DB_ROOT_PASSWORD}" -e "
+    docker exec v2_glpi_db mysql -u root -p"${GLPI_DB_ROOT_PASSWORD}" -e "
         DROP DATABASE IF EXISTS ${GLPI_DB_NAME};
         CREATE DATABASE ${GLPI_DB_NAME} CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
         GRANT ALL PRIVILEGES ON ${GLPI_DB_NAME}.* TO '${GLPI_DB_USER}'@'%';
         FLUSH PRIVILEGES;
     "
 
-    docker exec -i glpi_db mysql \
+    docker exec -i v2_glpi_db mysql \
         -u"${GLPI_DB_USER}" \
         -p"${GLPI_DB_PASSWORD}" \
         "${GLPI_DB_NAME}" < "${RESTORE_DIR}/glpi_database.sql"
@@ -141,10 +141,10 @@ restore_volume() {
 }
 
 log "GLPI: Восстановление volumes..."
-restore_volume "glpi_files.tar.gz" "glpi_files"
-restore_volume "glpi_config.tar.gz" "glpi_config"
-restore_volume "glpi_plugins.tar.gz" "glpi_plugins"
-restore_volume "glpi_marketplace.tar.gz" "glpi_marketplace"
+restore_volume "glpi_files.tar.gz" "v2_glpi_files"
+restore_volume "glpi_config.tar.gz" "v2_glpi_config"
+restore_volume "glpi_plugins.tar.gz" "v2_glpi_plugins"
+restore_volume "glpi_marketplace.tar.gz" "v2_glpi_marketplace"
 
 # ============================================================
 # RESTORE CHATWOOT DATABASE
@@ -153,19 +153,19 @@ restore_volume "glpi_marketplace.tar.gz" "glpi_marketplace"
 if [ -f "${RESTORE_DIR}/chatwoot_database.sql" ]; then
     log "Chatwoot: Восстановление базы данных..."
 
-    docker exec chatwoot_db psql -U "${CHATWOOT_DB_USER}" -d postgres -c "
+    docker exec v2_chatwoot_db psql -U "${CHATWOOT_DB_USER}" -d postgres -c "
         SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = '${CHATWOOT_DB_NAME}';
     " 2>/dev/null || true
 
-    docker exec chatwoot_db psql -U "${CHATWOOT_DB_USER}" -d postgres -c "
+    docker exec v2_chatwoot_db psql -U "${CHATWOOT_DB_USER}" -d postgres -c "
         DROP DATABASE IF EXISTS ${CHATWOOT_DB_NAME};
     " 2>/dev/null || true
 
-    docker exec chatwoot_db psql -U "${CHATWOOT_DB_USER}" -d postgres -c "
+    docker exec v2_chatwoot_db psql -U "${CHATWOOT_DB_USER}" -d postgres -c "
         CREATE DATABASE ${CHATWOOT_DB_NAME};
     "
 
-    docker exec -i chatwoot_db psql \
+    docker exec -i v2_chatwoot_db psql \
         -U "${CHATWOOT_DB_USER}" \
         -d "${CHATWOOT_DB_NAME}" < "${RESTORE_DIR}/chatwoot_database.sql"
 
@@ -179,7 +179,7 @@ fi
 # ============================================================
 
 log "Chatwoot: Восстановление storage..."
-restore_volume "chatwoot_storage.tar.gz" "chatwoot_storage"
+restore_volume "chatwoot_storage.tar.gz" "v2_chatwoot_storage"
 
 # ============================================================
 # ОЧИСТКА И ЗАПУСК
@@ -204,6 +204,6 @@ echo ""
 docker compose ps
 echo ""
 echo "Проверьте:"
-echo "  - https://glpi.yapomogu.com"
-echo "  - https://chat.yapomogu.com"
+echo "  - https://glpi2.yapomogu.com"
+echo "  - https://chat2.yapomogu.com"
 echo ""
