@@ -1,0 +1,279 @@
+# ============================================================
+# GLPI + Chatwoot | yapomogu.com
+# ============================================================
+# Запуск: docker compose up -d
+# ВАЖНО: Скопируйте .env.example в .env перед запуском!
+# ============================================================
+
+networks:
+  npm_default:
+    external: true
+    name: npm_default
+  backend:
+    driver: bridge
+
+services:
+
+  # ==========================================================
+  # GLPI - glpi2.yapomogu.com
+  # ==========================================================
+  glpi:
+    image: diouxx/glpi:latest
+    container_name: v2_glpi
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      - TIMEZONE=${TZ}
+    volumes:
+      - glpi_files:/var/www/html/glpi/files
+      - glpi_plugins:/var/www/html/plugins
+      - glpi_config:/var/www/html/glpi/config
+      - glpi_marketplace:/var/www/html/marketplace
+    networks:
+      - npm_default
+      - backend
+    depends_on:
+      glpi_db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost/status.php || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    deploy:
+      resources:
+        limits:
+          cpus: '${GLPI_CPU_LIMIT:-2.0}'
+          memory: ${GLPI_MEMORY_LIMIT:-2g}
+        reservations:
+          cpus: '0.5'
+          memory: 512m
+
+  glpi_db:
+    image: mariadb:10.11
+    container_name: v2_glpi_db
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      - MYSQL_ROOT_PASSWORD=${GLPI_DB_ROOT_PASSWORD}
+      - MYSQL_DATABASE=${GLPI_DB_NAME}
+      - MYSQL_USER=${GLPI_DB_USER}
+      - MYSQL_PASSWORD=${GLPI_DB_PASSWORD}
+    volumes:
+      - glpi_db_data:/var/lib/mysql
+    networks:
+      - backend
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    healthcheck:
+      test: ["CMD", "/usr/local/bin/healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+    deploy:
+      resources:
+        limits:
+          cpus: '${DB_CPU_LIMIT:-1.0}'
+          memory: ${DB_MEMORY_LIMIT:-1g}
+        reservations:
+          cpus: '0.25'
+          memory: 256m
+
+  # ==========================================================
+  # CHATWOOT - chat2.yapomogu.com
+  # ==========================================================
+  chatwoot:
+    image: chatwoot/chatwoot:latest
+    container_name: v2_chatwoot
+    restart: unless-stopped
+    command: bundle exec rails s -p 3000 -b 0.0.0.0
+    env_file:
+      - .env
+    environment:
+      - RAILS_ENV=production
+      - NODE_ENV=production
+      - INSTALLATION_ENV=docker
+      - SECRET_KEY_BASE=${CHATWOOT_SECRET_KEY_BASE}
+      - FRONTEND_URL=${CHATWOOT_FRONTEND_URL}
+      - DEFAULT_LOCALE=${CHATWOOT_DEFAULT_LOCALE}
+      - FORCE_SSL=true
+      - ENABLE_ACCOUNT_SIGNUP=false
+      # Database
+      - POSTGRES_HOST=chatwoot_db
+      - POSTGRES_DATABASE=${CHATWOOT_DB_NAME}
+      - POSTGRES_USERNAME=${CHATWOOT_DB_USER}
+      - POSTGRES_PASSWORD=${CHATWOOT_DB_PASSWORD}
+      # Redis
+      - REDIS_URL=${REDIS_URL}
+      # SMTP
+      - SMTP_ADDRESS=${SMTP_ADDRESS}
+      - SMTP_PORT=${SMTP_PORT}
+      - SMTP_USERNAME=${SMTP_USERNAME}
+      - SMTP_PASSWORD=${SMTP_PASSWORD}
+      - SMTP_DOMAIN=${SMTP_DOMAIN}
+      - SMTP_AUTHENTICATION=${SMTP_AUTHENTICATION}
+      - SMTP_TLS=${SMTP_TLS}
+      - SMTP_SSL=${SMTP_SSL}
+      - SMTP_ENABLE_STARTTLS_AUTO=${SMTP_ENABLE_STARTTLS_AUTO}
+      - MAILER_SENDER_EMAIL=${MAILER_SENDER_EMAIL}
+    volumes:
+      - chatwoot_storage:/app/storage
+    networks:
+      - npm_default
+      - backend
+    depends_on:
+      chatwoot_db:
+        condition: service_healthy
+      chatwoot_redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://localhost:3000/api || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 90s
+    deploy:
+      resources:
+        limits:
+          cpus: '${CHATWOOT_CPU_LIMIT:-2.0}'
+          memory: ${CHATWOOT_MEMORY_LIMIT:-2g}
+        reservations:
+          cpus: '0.5'
+          memory: 512m
+
+  chatwoot_sidekiq:
+    image: chatwoot/chatwoot:latest
+    container_name: v2_chatwoot_sidekiq
+    restart: unless-stopped
+    command: bundle exec sidekiq -C config/sidekiq.yml
+    env_file:
+      - .env
+    environment:
+      - RAILS_ENV=production
+      - NODE_ENV=production
+      - SECRET_KEY_BASE=${CHATWOOT_SECRET_KEY_BASE}
+      - FRONTEND_URL=${CHATWOOT_FRONTEND_URL}
+      - DEFAULT_LOCALE=${CHATWOOT_DEFAULT_LOCALE}
+      # Database
+      - POSTGRES_HOST=chatwoot_db
+      - POSTGRES_DATABASE=${CHATWOOT_DB_NAME}
+      - POSTGRES_USERNAME=${CHATWOOT_DB_USER}
+      - POSTGRES_PASSWORD=${CHATWOOT_DB_PASSWORD}
+      # Redis
+      - REDIS_URL=${REDIS_URL}
+      # SMTP
+      - SMTP_ADDRESS=${SMTP_ADDRESS}
+      - SMTP_PORT=${SMTP_PORT}
+      - SMTP_USERNAME=${SMTP_USERNAME}
+      - SMTP_PASSWORD=${SMTP_PASSWORD}
+      - SMTP_DOMAIN=${SMTP_DOMAIN}
+      - SMTP_AUTHENTICATION=${SMTP_AUTHENTICATION}
+      - SMTP_TLS=${SMTP_TLS}
+      - SMTP_SSL=${SMTP_SSL}
+      - SMTP_ENABLE_STARTTLS_AUTO=${SMTP_ENABLE_STARTTLS_AUTO}
+      - MAILER_SENDER_EMAIL=${MAILER_SENDER_EMAIL}
+    volumes:
+      - chatwoot_storage:/app/storage
+    networks:
+      - backend
+    depends_on:
+      chatwoot_db:
+        condition: service_healthy
+      chatwoot_redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "pgrep -f sidekiq || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 1g
+        reservations:
+          cpus: '0.25'
+          memory: 256m
+
+  chatwoot_db:
+    image: pgvector/pgvector:pg15
+    container_name: v2_chatwoot_db
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      - POSTGRES_DB=${CHATWOOT_DB_NAME}
+      - POSTGRES_USER=${CHATWOOT_DB_USER}
+      - POSTGRES_PASSWORD=${CHATWOOT_DB_PASSWORD}
+    volumes:
+      - chatwoot_db_data:/var/lib/postgresql/data
+    networks:
+      - backend
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${CHATWOOT_DB_USER} -d ${CHATWOOT_DB_NAME}"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+    deploy:
+      resources:
+        limits:
+          cpus: '${DB_CPU_LIMIT:-1.0}'
+          memory: ${DB_MEMORY_LIMIT:-1g}
+        reservations:
+          cpus: '0.25'
+          memory: 256m
+
+  chatwoot_redis:
+    image: redis:7-alpine
+    container_name: v2_chatwoot_redis
+    restart: unless-stopped
+    env_file:
+      - .env
+    volumes:
+      - chatwoot_redis_data:/data
+    networks:
+      - backend
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD}
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli -a $$REDIS_PASSWORD ping | grep PONG"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512m
+        reservations:
+          cpus: '0.1'
+          memory: 128m
+
+# ============================================================
+# VOLUMES - Named volumes для персистентности данных
+# ============================================================
+volumes:
+  # GLPI
+  glpi_files:
+    name: glpi_files
+  glpi_plugins:
+    name: glpi_plugins
+  glpi_config:
+    name: glpi_config
+  glpi_marketplace:
+    name: glpi_marketplace
+  glpi_db_data:
+    name: glpi_db_data
+  
+  # Chatwoot
+  chatwoot_storage:
+    name: chatwoot_storage
+  chatwoot_db_data:
+    name: chatwoot_db_data
+  chatwoot_redis_data:
+    name: chatwoot_redis_data
