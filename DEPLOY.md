@@ -151,7 +151,7 @@ docker logs v2_chatwoot 2>&1 | grep -i error
 1. **GLPI**: https://glpi2.yapomogu.com
    - Должен открыться мастер установки
    - Настройки БД:
-     - Сервер: `v2_glpi_db`
+     - Сервер: `glpi_db`
      - База: `glpi`
      - Пользователь: `glpi`
      - Пароль: (из `.env`)

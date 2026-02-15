@@ -33,12 +33,12 @@ error() { echo -e "${RED}[$(date '+%H:%M:%S')]${NC} $1"; exit 1; }
 # ПРОВЕРКИ
 # ============================================================
 
-if ! docker ps | grep -q glpi_db; then
-    error "Контейнер glpi_db не запущен!"
+if ! docker ps | grep -q v2_glpi_db; then
+    error "Контейнер v2_glpi_db не запущен!"
 fi
 
-if ! docker ps | grep -q chatwoot_db; then
-    error "Контейнер chatwoot_db не запущен!"
+if ! docker ps | grep -q v2_chatwoot_db; then
+    error "Контейнер v2_chatwoot_db не запущен!"
 fi
 
 mkdir -p "${BACKUP_DIR}/${DATE}"
@@ -53,7 +53,7 @@ log "=========================================="
 # ============================================================
 
 log "GLPI: Создание дампа базы данных..."
-docker exec glpi_db mysqldump \
+docker exec v2_glpi_db mysqldump \
     -u"${GLPI_DB_USER}" \
     -p"${GLPI_DB_PASSWORD}" \
     --single-transaction \
@@ -84,10 +84,10 @@ backup_volume() {
         alpine tar czf "/backup/${backup_file}" -C /data .
 }
 
-backup_volume "glpi_files" "glpi_files.tar.gz"
-backup_volume "glpi_config" "glpi_config.tar.gz"
-backup_volume "glpi_plugins" "glpi_plugins.tar.gz"
-backup_volume "glpi_marketplace" "glpi_marketplace.tar.gz"
+backup_volume "v2_glpi_files" "glpi_files.tar.gz"
+backup_volume "v2_glpi_config" "glpi_config.tar.gz"
+backup_volume "v2_glpi_plugins" "glpi_plugins.tar.gz"
+backup_volume "v2_glpi_marketplace" "glpi_marketplace.tar.gz"
 
 log "   OK: GLPI volumes backed up"
 
@@ -96,7 +96,7 @@ log "   OK: GLPI volumes backed up"
 # ============================================================
 
 log "Chatwoot: Создание дампа базы данных..."
-docker exec chatwoot_db pg_dump \
+docker exec v2_chatwoot_db pg_dump \
     -U "${CHATWOOT_DB_USER}" \
     -d "${CHATWOOT_DB_NAME}" \
     --no-owner \
@@ -114,7 +114,7 @@ fi
 # ============================================================
 
 log "Chatwoot: Бэкап storage..."
-backup_volume "chatwoot_storage" "chatwoot_storage.tar.gz"
+backup_volume "v2_chatwoot_storage" "chatwoot_storage.tar.gz"
     -C "${DATA_DIR}/chatwoot" \
     storage 2>/dev/null || true
 log "   OK: chatwoot_storage.tar.gz ($(du -h "${CURRENT_BACKUP}/chatwoot_storage.tar.gz" | cut -f1))"

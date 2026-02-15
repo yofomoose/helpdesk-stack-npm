@@ -81,7 +81,7 @@ docker exec v2_glpi rm /var/www/html/install/install.php
 
 1. **GLPI** (https://glpi2.yapomogu.com):
    - Следуйте мастеру установки
-   - DB Server: `v2_glpi_db`
+   - DB Server: `glpi_db`
    - Удалите installer: `docker exec v2_glpi rm /var/www/html/install/install.php`
 
 2. **Chatwoot** (https://chat2.yapomogu.com):

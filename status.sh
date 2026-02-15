@@ -60,10 +60,10 @@ echo "=========================================="
 echo ""
 
 echo "GLPI:"
-docker logs glpi 2>&1 | grep -i error | tail -3 | sed 's/^/  /' || echo "  Ошибок нет"
+docker logs v2_glpi 2>&1 | grep -i error | tail -3 | sed 's/^/  /' || echo "  Ошибок нет"
 
 echo ""
 echo "Chatwoot:"
-docker logs chatwoot 2>&1 | grep -i error | tail -3 | sed 's/^/  /' || echo "  Ошибок нет"
+docker logs v2_chatwoot 2>&1 | grep -i error | tail -3 | sed 's/^/  /' || echo "  Ошибок нет"
 
 echo ""

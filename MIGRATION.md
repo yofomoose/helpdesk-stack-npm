@@ -41,55 +41,55 @@ docker compose down
 
 ```bash
 # Создать volumes
-docker volume create glpi_files
-docker volume create glpi_plugins
-docker volume create glpi_config
-docker volume create glpi_marketplace
-docker volume create glpi_db_data
-docker volume create chatwoot_storage
-docker volume create chatwoot_db_data
-docker volume create chatwoot_redis_data
+docker volume create v2_glpi_files
+docker volume create v2_glpi_plugins
+docker volume create v2_glpi_config
+docker volume create v2_glpi_marketplace
+docker volume create v2_glpi_db_data
+docker volume create v2_chatwoot_storage
+docker volume create v2_chatwoot_db_data
+docker volume create v2_chatwoot_redis_data
 
 # Скопировать данные GLPI
 docker run --rm \
   -v $(pwd)/data/glpi/files:/source:ro \
-  -v glpi_files:/dest \
+  -v v2_glpi_files:/dest \
   alpine cp -a /source/. /dest/
 
 docker run --rm \
   -v $(pwd)/data/glpi/plugins:/source:ro \
-  -v glpi_plugins:/dest \
+  -v v2_glpi_plugins:/dest \
   alpine cp -a /source/. /dest/
 
 docker run --rm \
   -v $(pwd)/data/glpi/config:/source:ro \
-  -v glpi_config:/dest \
+  -v v2_glpi_config:/dest \
   alpine cp -a /source/. /dest/
 
 docker run --rm \
   -v $(pwd)/data/glpi/marketplace:/source:ro \
-  -v glpi_marketplace:/dest \
+  -v v2_glpi_marketplace:/dest \
   alpine cp -a /source/. /dest/
 
 docker run --rm \
   -v $(pwd)/data/glpi/db:/source:ro \
-  -v glpi_db_data:/dest \
+  -v v2_glpi_db_data:/dest \
   alpine cp -a /source/. /dest/
 
 # Скопировать данные Chatwoot
 docker run --rm \
   -v $(pwd)/data/chatwoot/storage:/source:ro \
-  -v chatwoot_storage:/dest \
+  -v v2_chatwoot_storage:/dest \
   alpine cp -a /source/. /dest/
 
 docker run --rm \
   -v $(pwd)/data/chatwoot/db:/source:ro \
-  -v chatwoot_db_data:/dest \
+  -v v2_chatwoot_db_data:/dest \
   alpine cp -a /source/. /dest/
 
 docker run --rm \
   -v $(pwd)/data/chatwoot/redis:/source:ro \
-  -v chatwoot_redis_data:/dest \
+  -v v2_chatwoot_redis_data:/dest \
   alpine cp -a /source/. /dest/
 ```
 
@@ -113,8 +113,8 @@ docker compose ps
 docker compose logs -f
 
 # Открыть в браузере
-# https://glpi.yapomogu.com
-# https://chat.yapomogu.com
+# https://glpi2.yapomogu.com
+# https://chat2.yapomogu.com
 ```
 
 ## Вариант 3: Использование бэкапа
