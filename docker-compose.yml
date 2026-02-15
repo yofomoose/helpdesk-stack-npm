@@ -27,7 +27,7 @@ services:
       - TIMEZONE=${TZ}
     volumes:
       - glpi_files:/var/www/html/glpi/files
-      - glpi_plugins:/var/www/html/plugins
+      - glpi_plugins:/var/www/html/glpi/plugins
       - glpi_config:/var/www/html/glpi/config
       - glpi_marketplace:/var/www/html/marketplace
     networks:
