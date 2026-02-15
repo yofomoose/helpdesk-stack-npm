@@ -89,12 +89,16 @@ if [ -z "${RESTORE_DIR}" ]; then
 fi
 
 # ============================================================
-# ОСТАНОВКА СЕРВИСОВ
+# ПОДГОТОВКА КОНТЕЙНЕРОВ
 # ============================================================
 
-log "Остановка сервисов..."
+log "Остановка приложений..."
 cd "${SCRIPT_DIR}"
 docker compose stop glpi chatwoot chatwoot_sidekiq 2>/dev/null || true
+
+log "Запуск БД контейнеров..."
+docker compose up -d glpi_db chatwoot_db chatwoot_redis 2>/dev/null || true
+sleep 10
 
 # ============================================================
 # RESTORE GLPI DATABASE
