@@ -29,7 +29,7 @@ services:
       - glpi_files:/var/www/html/glpi/files
       - glpi_plugins:/var/www/html/glpi/plugins
       - glpi_config:/var/www/html/glpi/config
-      - glpi_marketplace:/var/www/html/marketplace
+      - glpi_marketplace:/var/www/html/glpi/marketplace
     networks:
       - npm_default
       - backend
@@ -37,7 +37,7 @@ services:
       glpi_db:
         condition: service_healthy
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost/status.php || exit 1"]
+      test: ["CMD-SHELL", "curl -f http://localhost/ || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -95,11 +95,9 @@ services:
     environment:
       - RAILS_ENV=production
       - NODE_ENV=production
-      - INSTALLATION_ENV=docker
       - SECRET_KEY_BASE=${CHATWOOT_SECRET_KEY_BASE}
       - FRONTEND_URL=${CHATWOOT_FRONTEND_URL}
       - DEFAULT_LOCALE=${CHATWOOT_DEFAULT_LOCALE}
-      - FORCE_SSL=true
       - ENABLE_ACCOUNT_SIGNUP=false
       # Database
       - POSTGRES_HOST=chatwoot_db
@@ -107,7 +105,7 @@ services:
       - POSTGRES_USERNAME=${CHATWOOT_DB_USER}
       - POSTGRES_PASSWORD=${CHATWOOT_DB_PASSWORD}
       # Redis
-      - REDIS_URL=${REDIS_URL}
+      - REDIS_URL=redis://:${REDIS_PASSWORD}@chatwoot_redis:6379
       # SMTP
       - SMTP_ADDRESS=${SMTP_ADDRESS}
       - SMTP_PORT=${SMTP_PORT}
@@ -163,7 +161,7 @@ services:
       - POSTGRES_USERNAME=${CHATWOOT_DB_USER}
       - POSTGRES_PASSWORD=${CHATWOOT_DB_PASSWORD}
       # Redis
-      - REDIS_URL=${REDIS_URL}
+      - REDIS_URL=redis://:${REDIS_PASSWORD}@chatwoot_redis:6379
       # SMTP
       - SMTP_ADDRESS=${SMTP_ADDRESS}
       - SMTP_PORT=${SMTP_PORT}
