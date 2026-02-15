@@ -7,8 +7,7 @@ cd /path/to/helpdesk-stack-npm && \
 chmod +x *.sh && \
 docker compose up -d v2_glpi_db v2_chatwoot_db v2_chatwoot_redis && \
 sleep 60 && \
-docker compose run --rm -e DISABLE_DATABASE_ENVIRONMENT_CHECK=1 chatwoot bundle exec rails db:schema:load && \
-docker compose run --rm chatwoot bundle exec rails db:seed && \
+docker compose run --rm chatwoot bundle exec rails db:chatwoot_prepare && \
 docker compose up -d && \
 docker compose ps
 ```
@@ -28,8 +27,7 @@ docker compose up -d v2_glpi_db v2_chatwoot_db v2_chatwoot_redis
 sleep 60
 
 # 4. Инициализация Chatwoot
-docker compose run --rm -e DISABLE_DATABASE_ENVIRONMENT_CHECK=1 chatwoot bundle exec rails db:schema:load
-docker compose run --rm chatwoot bundle exec rails db:seed
+docker compose run --rm chatwoot bundle exec rails db:chatwoot_prepare
 
 # 5. Запуск всех сервисов
 docker compose up -d

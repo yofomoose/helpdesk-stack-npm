@@ -110,9 +110,8 @@ sleep 60
 # Проверьте что БД healthy
 docker compose ps
 
-# Выполните миграции Chatwoot
-docker compose run --rm chatwoot bundle exec rails db:schema:load DISABLE_DATABASE_ENVIRONMENT_CHECK=1
-docker compose run --rm chatwoot bundle exec rails db:seed
+# Выполните инициализацию БД Chatwoot
+docker compose run --rm chatwoot bundle exec rails db:chatwoot_prepare
 
 # Запустите все сервисы
 docker compose up -d
