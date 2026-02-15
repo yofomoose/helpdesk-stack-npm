@@ -258,20 +258,20 @@ services:
 volumes:
   # GLPI
   glpi_files:
-    name: glpi_files
+    name: v2_glpi_files
   glpi_plugins:
-    name: glpi_plugins
+    name: v2_glpi_plugins
   glpi_config:
-    name: glpi_config
+    name: v2_glpi_config
   glpi_marketplace:
-    name: glpi_marketplace
+    name: v2_glpi_marketplace
   glpi_db_data:
-    name: glpi_db_data
+    name: v2_glpi_db_data
   
   # Chatwoot
   chatwoot_storage:
-    name: chatwoot_storage
+    name: v2_chatwoot_storage
   chatwoot_db_data:
-    name: chatwoot_db_data
+    name: v2_chatwoot_db_data
   chatwoot_redis_data:
-    name: chatwoot_redis_data
+    name: v2_chatwoot_redis_data
