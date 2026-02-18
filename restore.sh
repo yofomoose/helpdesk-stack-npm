@@ -92,13 +92,13 @@ fi
 # ПОДГОТОВКА КОНТЕЙНЕРОВ
 # ============================================================
 
-log "Остановка приложений..."
+log "Остановка приложений (БД продолжат работать)..."
 cd "${SCRIPT_DIR}"
 docker compose stop glpi chatwoot chatwoot_sidekiq 2>/dev/null || true
 
-log "Запуск БД контейнеров..."
+log "Проверка/запуск БД контейнеров..."
 docker compose up -d glpi_db chatwoot_db chatwoot_redis 2>/dev/null || true
-sleep 10
+sleep 15
 
 # ============================================================
 # RESTORE GLPI DATABASE
@@ -194,6 +194,10 @@ rm -rf "${TEMP_DIR}"
 
 log "Запуск сервисов..."
 docker compose up -d
+sleep 10
+
+# Проверка запуска
+log "Ожидание готовности сервисов..."
 sleep 5
 
 # ============================================================
@@ -205,9 +209,28 @@ log "=========================================="
 log "  RESTORE COMPLETED"
 log "=========================================="
 echo ""
+
+log "Статус контейнеров:"
 docker compose ps
+
+GLPI_RUNNING=$(docker ps --filter "name=v2_glpi" --filter "status=running" --format "{{.Names}}" | wc -l)
+CHATWOOT_RUNNING=$(docker ps --filter "name=v2_chatwoot" --filter "status=running" --format "{{.Names}}" | wc -l)
+
 echo ""
-echo "Проверьте:"
-echo "  - https://glpi2.yapomogu.com"
+if [ "$GLPI_RUNNING" -ge 1 ] && [ "$CHATWOOT_RUNNING" -ge 1 ]; then
+    log "✅ Сервисы запущены успешно"
+else
+    warn "⚠️  Некоторые сервисы могут быть недоступны, проверьте логи:"
+    echo "   docker compose logs glpi"
+    echo "   docker compose logs chatwoot"
+fi
+
+echo ""
+echo "Проверьте работу:"
+echo "  - https://glpi.yapomogu.com"
 echo "  - https://chat2.yapomogu.com"
+echo ""
+echo "Логи:"
+echo "  docker compose logs -f glpi"
+echo "  docker compose logs -f chatwoot"
 echo ""
