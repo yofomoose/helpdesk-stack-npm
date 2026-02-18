@@ -3,7 +3,7 @@
 # BACKUP SCRIPT | GLPI + Chatwoot | yapomogu.com (Named Volumes)
 # ============================================================
 # Запуск:  ./backup.sh
-# Cron:    0 3 * * * /opt/helpdesk/backup.sh >> /var/log/helpdesk-backup.log 2>&1
+# Cron:    0 */3 * * * /opt/helpdesk/backup.sh >> /var/log/helpdesk-backup.log 2>&1
 # ============================================================
 
 set -e
@@ -115,8 +115,6 @@ fi
 
 log "Chatwoot: Бэкап storage..."
 backup_volume "v2_chatwoot_storage" "chatwoot_storage.tar.gz"
-    -C "${DATA_DIR}/chatwoot" \
-    storage 2>/dev/null || true
 log "   OK: chatwoot_storage.tar.gz ($(du -h "${CURRENT_BACKUP}/chatwoot_storage.tar.gz" | cut -f1))"
 
 # ============================================================
